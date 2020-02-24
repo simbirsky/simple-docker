@@ -1,0 +1,45 @@
+version: '3.7'
+services:
+   nginx:
+      build:
+         context: ./
+         dockerfile: docker/nginx.docker
+      volumes:
+         - ./:/var/www
+         - ./storage/docker/log/nginx:/var/log/nginx
+      ports:
+         - "8080:80"
+      links:
+         - php-fpm
+   php-fpm:
+      build:
+         context: ./
+         dockerfile: docker/php-fpm.docker
+      volumes:
+         - ./:/var/www
+      links:
+         - db
+      environment:
+         DB_PORT: 3306
+         DB_HOST: db
+   php-cli:
+      build:
+         context: ./
+         dockerfile: docker/php-cli.docker
+      volumes:
+         - ./:/var/www
+      links:
+         - db
+      environment:
+         DB_PORT: 3306
+         DB_HOST: db
+   db:
+      image: postgres:12
+      volumes:
+         - ./storage/docker/db:/var/lib/postgresql/data
+      environment:
+         POSTGRES_USER: app
+         POSTGRES_PASSWORD: secret
+         POSTGRES_DB: app
+      ports:
+         - "3306:3306"
